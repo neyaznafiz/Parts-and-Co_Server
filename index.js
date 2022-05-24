@@ -20,20 +20,20 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 
 
 // // jwt function 
-// function verifyJWT(req, res, next) {
-//     const authHeader = req.headers.authorization
-//     if (!authHeader) {
-//         return res.status(401).send({ message: 'Unauthorizd Access' })
-//     }
-//     const token = authHeader.split(' ')[1]
-//     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
-//         if (err) {
-//             res.status(403).send({ message: 'Forbidden Access' })
-//         }
-//         req.decoded = decoded
-//         next()
-//     });
-// }
+function verifyJWT(req, res, next) {
+    const authHeader = req.headers.authorization
+    if (!authHeader) {
+        return res.status(401).send({ message: 'Unauthorizd Access' })
+    }
+    const token = authHeader.split(' ')[1]
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+        if (err) {
+            res.status(403).send({ message: 'Forbidden Access' })
+        }
+        req.decoded = decoded
+        next()
+    })
+}
 
 
 async function run() {
@@ -54,7 +54,7 @@ async function run() {
         app.get('/singleProduct/:id', async (req, res) => {
             const id = req.params.id
             console.log(id);
-            const query = {_id : ObjectId(id)}
+            const query = { _id: ObjectId(id) }
             console.log(query);
             const result = await productsCollection.findOne(query)
             console.log(result)
@@ -67,26 +67,47 @@ async function run() {
             res.send(result)
         })
 
+        // get all user
+
+        app.get('/user', async (req, res) => {
+            const query = {}
+            const result = await allUsersCollection.find(query).toArray()
+            res.send(result)
+        })
 
         // user put api 
         app.put('/user/:email', async (req, res) => {
             const email = req.params.email
-            // console.log(email);
             const user = req.body
-            // console.log(user);
             const filter = { email: email }
-            // console.log(filter);
             const options = { upsert: true }
-            // console.log(options);
             const updatedDoc = {
                 $set: user,
             }
-            // console.log(updatedDoc);
             const result = await allUsersCollection.updateOne(filter, updatedDoc, options)
             const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '20d' })
             console.log(result, token);
-            res.send({result, token})
+            res.send({ result, token })
         })
+
+
+        // // Filter product by email
+        // app.get('/myaddedproduct', verifyJWT, async (req, res) => {
+        //     const email = req.query.email
+        //     console.log(email);
+        //     const emailDecoded = req.decoded.email
+        //     console.log(emailDecoded);
+        //     if (email === emailDecoded) {
+        //         const query = { email: email }
+        //         console.log(query);
+        //         const result = await productsCollection.find(query).toArray()
+        //         console.log(result);
+        //         res.send(result)
+        //     }
+        //     else {
+        //         res.status(403).send({ message: 'Access denied! Forbidden access' })
+        //     }
+        // })
 
 
     }
