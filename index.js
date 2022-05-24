@@ -68,8 +68,7 @@ async function run() {
         })
 
         // get all user
-
-        app.get('/user', async (req, res) => {
+        app.get('/users', verifyJWT, async (req, res) => {
             const query = {}
             const result = await allUsersCollection.find(query).toArray()
             res.send(result)
@@ -88,6 +87,17 @@ async function run() {
             const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '20d' })
             console.log(result, token);
             res.send({ result, token })
+        })
+
+        // make admin api 
+        app.put('/user/admin/:email', verifyJWT, async (req, res) => {
+            const email = req.params.email
+            const filter = { email: email }
+            const updatedDoc = {
+                $set: { role: 'admin' },
+            }
+            const result = await allUsersCollection.updateOne(filter, updatedDoc)
+            res.send(result)
         })
 
 
