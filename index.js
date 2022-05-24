@@ -112,29 +112,35 @@ async function run() {
         app.get('/admin/:email', async (req, res) => {
             const email = req.params.email
             const user = await allUsersCollection.findOne({ email: email })
-            const isAdmin = user.role === 'admin' 
-            res.send({admin: isAdmin})
+            const isAdmin = user.role === 'admin'
+            res.send({ admin: isAdmin })
         })
 
 
-        // // Filter product by email
-        // app.get('/myaddedproduct', verifyJWT, async (req, res) => {
-        //     const email = req.query.email
-        //     console.log(email);
-        //     const emailDecoded = req.decoded.email
-        //     console.log(emailDecoded);
-        //     if (email === emailDecoded) {
-        //         const query = { email: email }
-        //         console.log(query);
-        //         const result = await productsCollection.find(query).toArray()
-        //         console.log(result);
-        //         res.send(result)
-        //     }
-        //     else {
-        //         res.status(403).send({ message: 'Access denied! Forbidden access' })
-        //     }
-        // })
+        // my product api
+        app.get("/myaddeditems", verifyJWT, async (req, res) => {
+            const decodedEmail = req.decoded.email;
+            const email = req.query.email;
+            if (email === decodedEmail) {
+                console.log(email);
+                const query = { email: email };
+                console.log(query);
+                const cursor = productsCollection.find(query);
+                const InventoryItems = await cursor.toArray();
+                console.log(InventoryItems);
+                res.send(InventoryItems);
+            } else {
+                res.status(403).send({ message: "Access denied! Forbidden access" });
+            }
+        });
 
+        //   delete specific product
+        app.delete("/myproduct/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await productsCollection.deleteOne(query);
+            res.send(result);
+        });
 
     }
     finally { }
