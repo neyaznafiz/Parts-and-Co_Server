@@ -19,21 +19,21 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 })
 
 
-// jwt function 
-function verifyJWT(req, res, next) {
-    const authHeader = req.headers.authorization
-    if (!authHeader) {
-        return res.status(401).send({ message: 'Unauthorizd Access' })
-    }
-    const token = authHeader.split(' ')[1]
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
-        if (err) {
-            res.status(403).send({ message: 'Forbidden Access' })
-        }
-        req.decoded = decoded
-        next()
-    });
-}
+// // jwt function 
+// function verifyJWT(req, res, next) {
+//     const authHeader = req.headers.authorization
+//     if (!authHeader) {
+//         return res.status(401).send({ message: 'Unauthorizd Access' })
+//     }
+//     const token = authHeader.split(' ')[1]
+//     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+//         if (err) {
+//             res.status(403).send({ message: 'Forbidden Access' })
+//         }
+//         req.decoded = decoded
+//         next()
+//     });
+// }
 
 
 async function run() {
@@ -83,9 +83,9 @@ async function run() {
             }
             // console.log(updatedDoc);
             const result = await allUsersCollection.updateOne(filter, updatedDoc, options)
-            // const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET)
-            // console.log(result);
-            res.send(result)
+            const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '20d' })
+            console.log(result, token);
+            res.send({result, token})
         })
 
 
