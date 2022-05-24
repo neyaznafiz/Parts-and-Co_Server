@@ -1,6 +1,7 @@
 const express = require('express')
 const cors = require('cors')
 require('dotenv').config()
+const jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 
@@ -18,10 +19,29 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 })
 
 
+// jwt function 
+function verifyJWT(req, res, next) {
+    const authHeader = req.headers.authorization
+    if (!authHeader) {
+        return res.status(401).send({ message: 'Unauthorizd Access' })
+    }
+    const token = authHeader.split(' ')[1]
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+        if (err) {
+            res.status(403).send({ message: 'Forbidden Access' })
+        }
+        req.decoded = decoded
+        next()
+    });
+}
+
+
 async function run() {
     try {
         await client.connect()
         const productsCollection = client.db('parts_and_co').collection('products')
+        const allUsersCollection = client.db('parts_and_co').collection('all-users')
+        // const userProfileCollection = client.db('parts_and_co').collection('users-profile')
 
 
         app.get('/product', async (req, res) => {
@@ -31,12 +51,15 @@ async function run() {
         })
 
 
-        app.get('/pareses/:id', async (req, res) => {
-            const id =req.params.id;
-            const query = {_id: id}
-            const result = await productsCollection.findOne(query);
-            res.send(result);
-          })
+        app.get('/singleProduct/:id', async (req, res) => {
+            const id = req.params.id
+            console.log(id);
+            const query = {_id : ObjectId(id)}
+            console.log(query);
+            const result = await productsCollection.findOne(query)
+            console.log(result)
+            res.send(result)
+        })
 
         app.post('/product', async (req, res) => {
             const data = req.body
@@ -44,7 +67,28 @@ async function run() {
             res.send(result)
         })
 
-        
+
+        // user put api 
+        app.put('/user/:email', async (req, res) => {
+            const email = req.params.email
+            // console.log(email);
+            const user = req.body
+            // console.log(user);
+            const filter = { email: email }
+            // console.log(filter);
+            const options = { upsert: true }
+            // console.log(options);
+            const updatedDoc = {
+                $set: user,
+            }
+            // console.log(updatedDoc);
+            const result = await allUsersCollection.updateOne(filter, updatedDoc, options)
+            // const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET)
+            // console.log(result);
+            res.send(result)
+        })
+
+
     }
     finally { }
 }
