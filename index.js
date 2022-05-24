@@ -41,7 +41,7 @@ async function run() {
         await client.connect()
         const productsCollection = client.db('parts_and_co').collection('products')
         const allUsersCollection = client.db('parts_and_co').collection('all-users')
-        // const userProfileCollection = client.db('parts_and_co').collection('users-profile')
+        const reviewCollection = client.db('parts_and_co').collection('coustomer-review')
 
 
         app.get('/product', async (req, res) => {
@@ -53,11 +53,8 @@ async function run() {
 
         app.get('/singleProduct/:id', async (req, res) => {
             const id = req.params.id
-            console.log(id);
             const query = { _id: ObjectId(id) }
-            console.log(query);
             const result = await productsCollection.findOne(query)
-            console.log(result)
             res.send(result)
         })
 
@@ -85,7 +82,7 @@ async function run() {
             }
             const result = await allUsersCollection.updateOne(filter, updatedDoc, options)
             const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '20d' })
-            console.log(result, token);
+            // console.log(result, token);
             res.send({ result, token })
         })
 
@@ -140,7 +137,22 @@ async function run() {
             const query = { _id: ObjectId(id) };
             const result = await productsCollection.deleteOne(query);
             res.send(result);
-        });
+        })
+
+
+        // app.post('/review', async (req, res) => {
+        //     const data = req.body
+        //     const result = await reviewCollection.insertOne(data)
+        //     console.log(result);
+        //     res.send(result)
+        // })
+
+        app.post('/review', async (req, res) => {
+            const review = req.body
+            const result = await reviewCollection.insertOne(review)
+            console.log(result);
+            res.send(result)
+        })
 
     }
     finally { }
