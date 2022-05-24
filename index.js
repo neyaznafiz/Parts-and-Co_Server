@@ -92,12 +92,28 @@ async function run() {
         // make admin api 
         app.put('/user/admin/:email', verifyJWT, async (req, res) => {
             const email = req.params.email
-            const filter = { email: email }
-            const updatedDoc = {
-                $set: { role: 'admin' },
+            const requester = req.decoded.email
+            const requesterAc = await allUsersCollection.findOne({ email: requester })
+
+            if (requesterAc.role === 'admin') {
+                const filter = { email: email }
+                const updatedDoc = {
+                    $set: { role: 'admin' },
+                }
+                const result = await allUsersCollection.updateOne(filter, updatedDoc)
+                res.send(result)
             }
-            const result = await allUsersCollection.updateOne(filter, updatedDoc)
-            res.send(result)
+            else {
+                res.status(403).send({ message: 'Forbidden' });
+            }
+        })
+
+        // get admin api
+        app.get('/admin/:email', async (req, res) => {
+            const email = req.params.email
+            const user = await allUsersCollection.findOne({ email: email })
+            const isAdmin = user.role === 'admin' 
+            res.send({admin: isAdmin})
         })
 
 
