@@ -129,7 +129,7 @@ async function run() {
             } else {
                 res.status(403).send({ message: "Access denied! Forbidden access" });
             }
-        });
+        })
 
         //   delete specific product
         app.delete("/myproduct/:id", async (req, res) => {
@@ -139,19 +139,29 @@ async function run() {
             res.send(result);
         })
 
-
-        // app.post('/review', async (req, res) => {
-        //     const data = req.body
-        //     const result = await reviewCollection.insertOne(data)
-        //     console.log(result);
-        //     res.send(result)
-        // })
-
+        // review post api
         app.post('/review', async (req, res) => {
             const review = req.body
             const result = await reviewCollection.insertOne(review)
             console.log(result);
             res.send(result)
+        })
+
+        // myreview / review filter by email for my review
+        app.get("/myaddedreview", verifyJWT, async (req, res) => {
+            const decodedEmail = req.decoded.email;
+            const email = req.query.email;
+            if (email === decodedEmail) {
+                console.log(email);
+                const query = { email: email };
+                console.log(query);
+                const cursor = reviewCollection .find(query);
+                const InventoryItems = await cursor.toArray();
+                console.log(InventoryItems);
+                res.send(InventoryItems);
+            } else {
+                res.status(403).send({ message: "Access denied! Forbidden access" });
+            }
         })
 
     }
