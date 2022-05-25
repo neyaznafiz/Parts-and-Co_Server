@@ -155,13 +155,19 @@ async function run() {
                 console.log(email);
                 const query = { email: email };
                 console.log(query);
-                const cursor = reviewCollection .find(query);
+                const cursor = reviewCollection.find(query);
                 const InventoryItems = await cursor.toArray();
                 console.log(InventoryItems);
                 res.send(InventoryItems);
             } else {
                 res.status(403).send({ message: "Access denied! Forbidden access" });
             }
+        })
+
+        app.get('/allreview', async (req, res) => {
+            const query = {}
+            const result = await reviewCollection.find(query).toArray()
+            res.send(result)
         })
 
     }
