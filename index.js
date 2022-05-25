@@ -165,6 +165,7 @@ async function run() {
             }
         })
 
+        // get review api
         app.get('/allreview', async (req, res) => {
             const query = {}
             const result = await reviewCollection.find(query).toArray()
@@ -172,18 +173,29 @@ async function run() {
         })
 
 
-        // prost order
-        // app.post('/orders', async (req, res) => {
-        //     const orders = req.body
-        //     const result = await ordersCollection.insertOne(orders)
-        //     console.log(result);
-        //     res.send(result)
-        // })
-
+        // prost order to database
         app.post('/orders', async (req, res) => {
             const orders = req.body
             const result = await ordersCollection.insertOne(orders)
             res.send(result)
+        })
+
+
+        // filter orders by email for my orders
+        app.get("/myaddedorders", verifyJWT, async (req, res) => {
+            const decodedEmail = req.decoded.email;
+            const email = req.query.email;
+            if (email === decodedEmail) {
+                console.log(email);
+                const query = { email: email };
+                console.log(query);
+                const cursor = ordersCollection.find(query);
+                const InventoryItems = await cursor.toArray();
+                console.log(InventoryItems);
+                res.send(InventoryItems);
+            } else {
+                res.status(403).send({ message: "Access denied! Forbidden access" });
+            }
         })
 
 
