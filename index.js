@@ -42,6 +42,7 @@ async function run() {
         const productsCollection = client.db('parts_and_co').collection('products')
         const allUsersCollection = client.db('parts_and_co').collection('all-users')
         const reviewCollection = client.db('parts_and_co').collection('coustomer-review')
+        const ordersCollection = client.db('parts_and_co').collection('orders')
 
 
         app.get('/product', async (req, res) => {
@@ -169,6 +170,22 @@ async function run() {
             const result = await reviewCollection.find(query).toArray()
             res.send(result)
         })
+
+
+        // prost order
+        // app.post('/orders', async (req, res) => {
+        //     const orders = req.body
+        //     const result = await ordersCollection.insertOne(orders)
+        //     console.log(result);
+        //     res.send(result)
+        // })
+
+        app.post('/orders', async (req, res) => {
+            const orders = req.body
+            const result = await ordersCollection.insertOne(orders)
+            res.send(result)
+        })
+
 
     }
     finally { }
