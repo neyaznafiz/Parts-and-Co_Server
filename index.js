@@ -263,6 +263,13 @@ async function run() {
             res.send({ clientSecret: paymentIntent.client_secret })
         })
 
+        // get paid product
+        app.get('/paidproduct', verifyJWT, async (req, res) => {
+            const query = {}
+            const result = await paymentsCollection.find(query).toArray()
+            res.send(result)
+        })
+
     }
     finally { }
 }
