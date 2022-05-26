@@ -89,6 +89,14 @@ async function run() {
             res.send({ result, token })
         })
 
+        // delete user api
+        app.delete("/user/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await allUsersCollection.deleteOne(query);
+            res.send(result);
+        })
+
         // make admin api 
         app.put('/user/admin/:email', verifyJWT, async (req, res) => {
             const email = req.params.email
@@ -200,6 +208,22 @@ async function run() {
             }
         })
 
+        // get all orders
+        app.get('/allorders', async (req, res) => {
+            const query = {}
+            const result = await ordersCollection.find(query).toArray()
+            res.send(result)
+        })
+
+
+        // cancle ordeer
+        app.delete("/myorders/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await ordersCollection.deleteOne(query);
+            res.send(result);
+        })
+
         //   update bookin after payment 
         app.patch('/myaddedorders/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
@@ -227,8 +251,10 @@ async function run() {
         //   payment
         app.post('/create-payment-intent', verifyJWT, async (req, res) => {
             const parts = req.body
-            const price = parts.price
-            const amount = price * 100
+            console.log(parts);
+            const price = parts.totalPrice
+            console.log(price);
+            const amount = parseInt(price) * 100
             const paymentIntent = await stripe.paymentIntents.create({
                 amount: amount,
                 currency: 'usd',
