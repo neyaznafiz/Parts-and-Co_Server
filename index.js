@@ -20,7 +20,7 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 })
 
 
-// // jwt function 
+ // jwt function 
 function verifyJWT(req, res, next) {
     const authHeader = req.headers.authorization
     if (!authHeader) {
@@ -264,7 +264,7 @@ async function run() {
         })
 
         // get paid product
-        app.get('/paidproduct', verifyJWT, async (req, res) => {
+        app.get('/paidproduct', async(req, res) => {
             const query = {}
             const result = await paymentsCollection.find(query).toArray()
             res.send(result)
